@@ -8,10 +8,10 @@ import torch.utils.data as torch_utils
 from sklearn.model_selection import train_test_split
 
 
-from assignment1.data.covid_19_dataset import Covid19Dataset
-from assignment1.utils.training import Training
-from assignment1.utils.evaluation import Evaluation
-from assignment1.models.combined_vvg_model import CombinedVVGModel
+from data.covid_19_dataset import Covid19Dataset
+from utils.training import Training
+from utils.evaluation import Evaluation
+from models.combined_vvg_model import CombinedVVGModel
 
 
 if __name__ == '__main__':
@@ -32,8 +32,8 @@ if __name__ == '__main__':
 
     item_transform = transforms.Compose([transforms.ToTensor(),
                                          transforms.Resize(image_size, antialias=True)])
-    base_dataset = Covid19Dataset(".\\archive\\COVID-19_Radiography_Dataset"
-                                  ,color_channels=color_channels,
+    base_dataset = Covid19Dataset(os.path.join(".", "COVID-19_Radiography_Dataset"),
+                                  color_channels=color_channels,
                                   item_transform=item_transform)
 
     x, y = zip(*[item for item in base_dataset.data])

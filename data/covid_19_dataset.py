@@ -37,7 +37,6 @@ class Covid19Dataset(Dataset):
 
             items_path = os.path.join(path, class_path, "images")
 
-
             if os.path.exists(items_path):
                 item_paths = os.listdir(items_path)
                 items.extend([(os.path.join(items_path, item_path), idx) for item_path in item_paths])
