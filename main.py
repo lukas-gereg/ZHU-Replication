@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     item_transform = transforms.Compose([transforms.ToTensor(),
                                          transforms.Resize(image_size, antialias=True)])
-    base_dataset = Covid19Dataset("C:\\Škola\\TUKE\\ING\\ZHU\\ZHU_PROGRAMS\\assignment1\\archive\\COVID-19_Radiography_Dataset"
+    base_dataset = Covid19Dataset(".\\archive\\COVID-19_Radiography_Dataset"
                                   ,color_channels=color_channels,
                                   item_transform=item_transform)
 
