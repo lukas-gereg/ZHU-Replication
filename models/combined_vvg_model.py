@@ -3,7 +3,7 @@ import torchvision
 import numpy as np
 import torch.nn as nn
 
-from models.base_model import BaseModel
+from assignment1.models.base_model import BaseModel
 
 
 class CombinedVVGModel(BaseModel):

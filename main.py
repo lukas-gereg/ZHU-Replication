@@ -6,10 +6,10 @@ from torchvision import transforms
 from sklearn.model_selection import train_test_split
 
 
-from data.covid_19_dataset import Covid19Dataset
-from data.custom_subset import CustomSubset
-from utils.cross_validation import CrossValidation
-from models.combined_vvg_model import CombinedVVGModel
+from assignment1.data.custom_subset import CustomSubset
+from assignment1.data.covid_19_dataset import Covid19Dataset
+from assignment1.utils.cross_validation import CrossValidation
+from assignment1.models.combined_vvg_model import CombinedVVGModel
 
 
 if __name__ == '__main__':

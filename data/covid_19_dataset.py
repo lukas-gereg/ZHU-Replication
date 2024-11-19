@@ -3,7 +3,7 @@ import torch
 from PIL import Image
 from torchvision import transforms
 
-from data.base_dataset import BaseDataset
+from assignment1.data.base_dataset import BaseDataset
 
 
 class Covid19Dataset(BaseDataset):
