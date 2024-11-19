@@ -2,11 +2,11 @@ import os
 import torch
 from PIL import Image
 from torchvision import transforms
-from torch.utils.data import Dataset
+
+from data.base_dataset import BaseDataset
 
 
-
-class Covid19Dataset(Dataset):
+class Covid19Dataset(BaseDataset):
     @staticmethod
     def default_loader(path: str, load_type: str = "RGB") -> Image:
         """
@@ -21,9 +21,10 @@ class Covid19Dataset(Dataset):
                  item_transform: transforms.Compose = transforms.Compose([transforms.ToTensor()]),
                  target_transform: any = None
                  ) -> None:
+        super().__init__()
 
         self.load_type = "RGB" if color_channels == 3 else "L"
-        self.item_transform = item_transform
+        self.transform = item_transform
         self.target_transform = target_transform
         self.data, self.classes = self._init_data(path)
 
@@ -33,6 +34,7 @@ class Covid19Dataset(Dataset):
         items = []
 
         for idx, class_path in enumerate(["COVID", "Normal"]):
+        # for idx, class_path in enumerate(["Lung_Opacity", "Normal"]):
             classes.update({idx: class_path})
 
             items_path = os.path.join(path, class_path, "images")
@@ -50,8 +52,8 @@ class Covid19Dataset(Dataset):
         item_path, label = self.data[idx]
         item = self.default_loader(item_path, load_type=self.load_type)
 
-        if self.item_transform is not None:
-            item = self.item_transform(item)
+        if self.transform is not None:
+            item = self.transform(item)
 
         if self.target_transform is not None:
             label = self.target_transform(label)

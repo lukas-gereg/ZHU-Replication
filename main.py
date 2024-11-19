@@ -1,36 +1,34 @@
 import os
-import wandb
 import torch
+import wandb
 import torch.nn as nn
-import matplotlib.pyplot as plt
 from torchvision import transforms
-import torch.utils.data as torch_utils
 from sklearn.model_selection import train_test_split
 
 
 from data.covid_19_dataset import Covid19Dataset
-from utils.training import Training
-from utils.evaluation import Evaluation
+from data.custom_subset import CustomSubset
+from utils.cross_validation import CrossValidation
 from models.combined_vvg_model import CombinedVVGModel
 
 
 if __name__ == '__main__':
     debug = False
-
-    wandb_config = None
-    wandb_login_key = None
+    folds = 5
+    random_seed = 42
 
     scheduler = None
-    early_stopping = None
+    early_stopping = 25
 
-    batch_size = 64
+    BATCH_SIZE = 64
     image_size = (150, 150)
     color_channels = 3
 
-    epochs = 25
+    epochs = 10000
     lr = 0.0003
 
     item_transform = transforms.Compose([transforms.ToTensor(),
+                                         # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
                                          transforms.Resize(image_size, antialias=True)])
     base_dataset = Covid19Dataset(os.path.join(".", "COVID-19_Radiography_Dataset"),
                                   color_channels=color_channels,
@@ -39,45 +37,42 @@ if __name__ == '__main__':
     x, y = zip(*[item for item in base_dataset.data])
     y_ids = [i for i in range(len(base_dataset))]
 
-    train_ids, test_ids, train_y, test_y = train_test_split(y_ids, y, stratify=y, test_size=0.3)
-    train_ids, validation_ids = train_test_split(train_ids, stratify=train_y, test_size=0.2)
+    train_ids, test_ids, train_y, test_y = train_test_split(y_ids, y, stratify=y, test_size=0.3, random_state=random_seed)
+    train_ids, validation_ids = train_test_split(train_ids, stratify=train_y, test_size=0.2, random_state=random_seed)
 
-    train_sub_sampler = torch_utils.SubsetRandomSampler(train_ids)
-    test_sub_sampler = torch_utils.SubsetRandomSampler(test_ids)
-    validation_sub_sampler = torch_utils.SubsetRandomSampler(validation_ids)
+    train_dataset = CustomSubset(base_dataset, train_ids)
+    test_dataset = CustomSubset(base_dataset, test_ids)
+    validation_dataset = CustomSubset(base_dataset, test_ids)
 
-    train_loader = torch_utils.DataLoader(base_dataset, batch_size=batch_size, sampler=train_sub_sampler)
-    test_loader = torch_utils.DataLoader(base_dataset, batch_size=batch_size, sampler=test_sub_sampler)
-    validation_loader = torch_utils.DataLoader(base_dataset, batch_size=batch_size, sampler=validation_sub_sampler)
-
-    model = CombinedVVGModel(color_channels, image_size, nn.AdaptiveAvgPool2d)
+    model_properties = {'color_channels': color_channels, 'image_size': image_size, 'pooling_method_constructor': nn.AdaptiveAvgPool2d}
+    model = CombinedVVGModel(model_properties)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     loss = nn.CrossEntropyLoss()
 
+    wandb_config = dict(project="First-Experiments", config={
+        "model properties": model_properties,
+        "learning rate": lr,
+        "image_transforms": str(item_transform),
+        "epochs": epochs,
+        "early stopping": early_stopping,
+        "model": str(model),
+        "optimizer": str(optimizer),
+        "loss calculator": str(loss),
+        "LR reduce scheduler": str(scheduler),
+        "debug": debug,
+        "batch_size": 64,
+        "random_seed": random_seed
+    })
+
+    wandb_login_key = "a9f105e8b3bc98e07700e93201d4b02c1c75106d"
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if wandb_login_key is not None:
+        wandb.login(key=wandb_login_key)
 
-    os.makedirs("model_params", exist_ok=True)
-
-    if wandb_login_key is not None and wandb_config is not None:
-        wandb.init(**wandb_config)
-
-    losses = Training(debug)(epochs, device, optimizer, model, loss, train_loader, validation_loader,
-                             early_stopping, scheduler)
-
-    total_loss, results = Evaluation(debug)(loss, test_loader, model, device)
-
-    wandb.finish()
-
-    print(f'results: {results}')
-    print(f'Loss per item in test: {total_loss}')
-
-    plt.title('Loss Graph')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss per item')
-
-    plt.plot(losses)
-
-    plt.show()
+    CrossValidation(BATCH_SIZE, folds, debug, random_seed)(epochs, device, optimizer, model, loss,
+                                                                         train_dataset, validation_dataset, test_dataset,
+                                                                         early_stopping, scheduler, wandb_config)
 
     print(f"training of model complete")
