@@ -38,11 +38,11 @@ if __name__ == '__main__':
     y_ids = [i for i in range(len(base_dataset))]
 
     train_ids, test_ids, train_y, test_y = train_test_split(y_ids, y, stratify=y, test_size=0.3, random_state=random_seed)
-    train_ids, validation_ids = train_test_split(train_ids, stratify=train_y, test_size=0.2, random_state=random_seed)
+    train_ids, validation_ids = train_test_split(train_ids, stratify=train_y, test_size=0.3, random_state=random_seed)
 
     train_dataset = CustomSubset(base_dataset, train_ids)
     test_dataset = CustomSubset(base_dataset, test_ids)
-    validation_dataset = CustomSubset(base_dataset, test_ids)
+    validation_dataset = CustomSubset(base_dataset, validation_ids)
 
     model_properties = {'color_channels': color_channels, 'image_size': image_size, 'pooling_method_constructor': nn.AdaptiveAvgPool2d}
     model = CombinedVVGModel(model_properties)
