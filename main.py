@@ -44,13 +44,13 @@ if __name__ == '__main__':
     test_dataset = CustomSubset(base_dataset, test_ids)
     validation_dataset = CustomSubset(base_dataset, validation_ids)
 
-    model_properties = {'color_channels': color_channels, 'image_size': image_size, 'pooling_method_constructor': nn.AdaptiveAvgPool2d}
+    model_properties = {'color_channels': color_channels, 'image_size': image_size, 'pooling_method_constructor': nn.AdaptiveMaxPool2d}
     model = CombinedVVGModel(model_properties)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     loss = nn.CrossEntropyLoss()
 
-    wandb_config = dict(project="First-Experiments", config={
+    wandb_config = dict(project="First-Experiments", entity="ZHU-assignment-1", config={
         "model properties": model_properties,
         "learning rate": lr,
         "image_transforms": str(item_transform),
