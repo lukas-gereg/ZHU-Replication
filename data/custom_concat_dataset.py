@@ -1,7 +1,7 @@
 from more_itertools import locate
 from torch.utils.data import ConcatDataset, Subset
 
-from assignment1.data.base_dataset import BaseDataset
+from data.base_dataset import BaseDataset
 
 
 class CustomConcatDataset(ConcatDataset, BaseDataset):
